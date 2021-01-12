@@ -669,10 +669,16 @@ Luckysheet开放了更细致的自定义配置选项，分别有
 	点击分页按钮会触发钩子函数 `onTogglePager`，返回当前页码，同`sPage`的`backFun`方法，此分页器设置只负责UI部分，具体切换分页后的数据请求和数据渲染，请在`onTogglePager`钩子行数里自定义处理。
 	```js
 	pager: {
-		pageIndex: 1, //当前的页码
-		pageSize: 10, //每页显示多少行数据
-		total: 50, //数据总行数
-		selectOption: [10, 20] //允许设置每页行数的选项
+		pageIndex: 1, //当前页码，必填
+		total: 100, //数据总条数，必填
+		selectOption: [10, 20, 30], // 选择每页的行数，
+		pageSize: 10, //每页显示多少条数据，默认10条
+		showTotal: false, // 是否显示总数，默认关闭：false
+		showSkip: false, //是否显示跳页，默认关闭：false
+		showPN: false, //是否显示上下翻页，默认开启：true
+		prevPage: '', //上翻页文字描述，默认"上一页"
+		nextPage: '', //下翻页文字描述，默认"下一页"
+		totalTxt: '', // 数据总条数文字描述，默认"总共：{total}"
 	}
 	```
 
@@ -761,6 +767,74 @@ Luckysheet开放了更细致的自定义配置选项，分别有
 		+ {Number} [end_c]:单元格右下角的垂直坐标
 	- {Object} [sheet]:当前sheet对象
 	- {Object} [ctx]: 当前画布的context
+
+- 示例：
+
+	一个在D1单元格的左上角和右下角分别绘制两张图的案例
+	:::::: details
+	```js
+	luckysheet.create({
+            hook: {
+                cellRenderAfter: function (cell, postion, sheetFile, ctx) {
+                    var r = postion.r;
+                    var c = postion.c;
+                    if (r === 0 && c === 3) { // 指定处理D1单元格
+                        if (!window.storeUserImage) {
+                            window.storeUserImage = {}
+                        }
+						
+                        if (!window.storeUserImage[r + '_' + c]) {
+                            window.storeUserImage[r + '_' + c] = {}
+                        }
+
+                        var img = null;
+                        var imgRight = null;
+
+                        if (window.storeUserImage[r + '_' + c].image && window.storeUserImage[r + '_' + c].imgRight) {
+							
+							// 加载过直接取
+                            img = window.storeUserImage[r + '_' + c].image;
+                            imgRight = window.storeUserImage[r + '_' + c].imgRight;
+
+                        } else {
+
+                            img = new Image();
+                            imgRight = new Image();
+
+                            img.src = 'https://www.dogedoge.com/favicon/developer.mozilla.org.ico';
+                            imgRight.src = 'https://www.dogedoge.com/static/icons/twemoji/svg/1f637.svg';
+
+							// 图片缓存到内存，下次直接取，不用再重新加载
+                            window.storeUserImage[r + '_' + c].image = img;
+                            window.storeUserImage[r + '_' + c].imgRight = imgRight;
+
+                        }
+
+						
+                        if (img.complete) { // 已经加载完成的直接渲染
+                            ctx.drawImage(img, postion.start_c, postion.start_r, 10, 10);
+                        } else {
+                            img.onload = function () {
+                                ctx.drawImage(img, postion.start_c, postion.start_r, 10, 10);
+                            }
+
+                        }
+
+                        if (imgRight.complete) {
+                            ctx.drawImage(imgRight, postion.end_c - 10, postion.end_r - 10, 10, 10);
+                        } else {
+
+                            imgRight.onload = function () {
+                                ctx.drawImage(imgRight, postion.end_c - 10, postion.end_r - 10, 10, 10);
+                            }
+                        }
+
+                    }
+                }
+            }
+        })
+	```
+	:::
 
 ------------
 ### cellAllRenderBefore
@@ -955,11 +1029,30 @@ Luckysheet开放了更细致的自定义配置选项，分别有
 - 类型：Function
 - 默认值：null
 - 作用：鼠标滚动事件
-- 参数：{, , }
+- 参数：
 	- {Object} [position]:
 		+ {Number} [scrollLeft]:横向滚动条的位置
 		+ {Number} [scrollTop]:垂直滚动条的位置
 		+ {Number} [canvasHeight]:canvas高度
+		
+------------
+### cellDragStop
+
+- 类型：Function
+- 默认值：null
+- 作用：鼠标拖拽文件到Luckysheet内部的结束事件
+- 参数：
+	- {Object} [cell]:单元格对象
+	- {Object} [postion]:
+		+ {Number} [r]:单元格所在行号
+		+ {Number} [c]:单元格所在列号
+		+ {Number} [start_r]:单元格左上角的水平坐标
+		+ {Number} [start_c]:单元格左上角的垂直坐标
+		+ {Number} [end_r]:单元格右下角的水平坐标
+		+ {Number} [end_c]:单元格右下角的垂直坐标
+	- {Object} [sheet]:当前sheet对象
+	- {Object} [ctx]: 当前画布的context
+	- {Object} [event]: 当前事件对象
 		
 ------------
 

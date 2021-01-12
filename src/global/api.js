@@ -2340,7 +2340,7 @@ export function getRangeJson(isFirstRowTitle, options = {}) {
             return;
         }
     }
-    let getdata = getdatabyselection(range, order);
+    let getdata = getdatabyselection(range, file.index);
     let arr = [];
     if (getdata.length === 0) {
         return;
@@ -2621,6 +2621,14 @@ export function setRangeShow(range, options = {}) {
         return tooltip.info("The order parameter is invalid.", "");
     }
 
+    for(let i = 0; i < range.length; i++){
+        let changeparam = menuButton.mergeMoveMain(range[i].column, range[i].row, range[i]);
+        range[i] = {
+            "row": changeparam[1],
+            "column": changeparam[0]
+        }
+    }
+
     file.luckysheet_select_save = range;
 
     if(file.index == Store.currentSheetIndex){
@@ -2732,21 +2740,38 @@ export function setSingleRangeFormat(attr, value, options = {}) {
         order = curSheetOrder,
     } = {...options}
 
-    if (attr == null) {
-        return tooltip.info('Arguments attr cannot be null or undefined.', '')
+    if (!attr) {
+        tooltip.info('Arguments attr cannot be null or undefined.', '')
+        return 'error';
     }
 
     if (range instanceof Array) {
-        return tooltip.info('setRangeValue only supports a single selection.', '')
+        tooltip.info('setRangeValue only supports a single selection.', '')
+        return 'error';
     }
 
-    if (typeof range === 'string' && formula.iscelldata(range)) {
-        range = formula.getcellrange(range)
+    if(getObjType(range) == 'string'){
+        if(!formula.iscelldata(range)){
+            tooltip.info("The range parameter is invalid.", "");
+            return 'error';
+        }
+
+        range = formula.getcellrange(range);
+    }
+
+    if(getObjType(range) != 'object' || range.row == null || range.column == null){
+        tooltip.info("The range parameter is invalid.", "");
+        return 'error';
     }
 
     for (let r = range.row[0]; r <= range.row[1]; r++) {
         for (let c = range.column[0]; c <= range.column[1]; c++) {
-            setCellFormat(r, c, attr, value, {order: order})
+            console.log('r',r);
+            console.log('c',c);
+            setCellValue(r, c, {[attr]: value}, {
+                order: order,
+                isRefresh: false,
+              })
         }
     }
 }
@@ -2795,12 +2820,31 @@ export function setRangeFormat(attr, value, options = {}) {
         return tooltip.info("The range parameter is invalid.", "");
     }
 
+    let file = Store.luckysheetfile[order];
+
+    let result = []
+
     for (let i = 0; i < range.length; i++) {
-        setSingleRangeFormat(attr, value, { range: range[i], order: order });
+        result.push(setSingleRangeFormat(attr, value, { range: range[i], order: order }));
     }
 
+    if(result.some(i => i === 'error')) {
+        file.data.length = 0;
+        file.data.push(...sheetData);
+        return false;
+    }
+
+    let fileData = $.extend(true, [], file.data);
+    file.data.length = 0;
+    file.data.push(...sheetData);
+
+    if(file.index == Store.currentSheetIndex){
+        jfrefreshgrid(fileData, undefined, undefined, true, false);
+    }
+
+    luckysheetrefreshgrid();
+
     if (success && typeof success === 'function') {
-        success()
     }
 }
 
@@ -5364,7 +5408,8 @@ export function hideGridLines(options = {}){
  * @param {Function} options.success 操作结束的回调函数
  */
 export function refresh(options = {}) {
-    luckysheetrefreshgrid();
+    // luckysheetrefreshgrid();
+    jfrefreshgrid();
 
     let {
         success
@@ -6503,16 +6548,20 @@ export function getTxtByRange(range=Store.luckysheet_select_save){
  * @param {Number} config.total 总条数
  */
 export function pagerInit (config) {
+    const {prevPage, nextPage, total} = locale().button;
     $('#luckysheet-bottom-pager').remove()
-    $('#luckysheet-sheet-area').append('<div id="luckysheet-bottom-pager" style="font-size: 14px; margin-left: 10px; display: inline-block;"></div>')
+    $('#luckysheet-sheet-content').after('<div id="luckysheet-bottom-pager" style="font-size: 14px; margin-left: 10px; display: inline-block;"></div>')
     $("#luckysheet-bottom-pager").sPage({
         page: config.pageIndex, //当前页码，必填
         total: config.total, //数据总条数，必填
         selectOption: config.selectOption, // 选择每页的行数，
         pageSize: config.pageSize, //每页显示多少条数据，默认10条
-        showTotal: true, // 是否显示总数
-        showSkip: config.showSkip || true, //是否显示跳页，默认关闭：false
-        showPN: config.showPN || true, //是否显示上下翻页，默认开启：true
+        showTotal: config.showTotal, // 是否显示总数，默认关闭：false
+        showSkip: config.showSkip, //是否显示跳页，默认关闭：false
+        showPN: config.showPN, //是否显示上下翻页，默认开启：true
+        prevPage: config.prevPage || prevPage, //上翻页文字描述，默认"上一页"
+        nextPage: config.nextPage || nextPage, //下翻页文字描述，默认"下一页"
+        totalTxt: config.totalTxt || total + config.total, // 数据总条数文字描述，{total}为占位符，默认"总共：{total}"
         backFun: function (page) {
             page.pageIndex = page.page
             if(!method.createHookFunction("onTogglePager", page)){ return; }
