@@ -1757,6 +1757,7 @@ function fuzzydate(s) {
 }
 
 export function genarate(value) {//万 单位格式增加！！！
+    if (typeof value === 'string') value = value.trim()
     var ret = [];
     var m = null, ct = {}, v = value;
     
@@ -1764,7 +1765,18 @@ export function genarate(value) {//万 单位格式增加！！！
         return null;
     }
 
-    if(value.toString().substr(0, 1) === "'"){
+    if (/^-?[0-9]{1,}[,][0-9]{3}(.[0-9]{1,2})?$/.test(value)) { // 表述金额的字符串，如：12,000.00 或者 -12,000.00
+        m = value
+        v = Number(value.split('.')[0].replace(',', ''))
+        let fa = "#,##0"
+        if (value.split('.')[1]) {
+            fa = "#,##0."
+            for (let i = 0; i < value.split('.')[1].length; i++) {
+                fa += 0
+            }
+        }
+        ct= {fa, t: "n"}
+    } else if(value.toString().substr(0, 1) === "'"){
         m = value.toString().substr(1);
         ct = { "fa": "@", "t": "s" };
     }
@@ -1792,23 +1804,23 @@ export function genarate(value) {//万 单位格式增加！！！
         v = value
         m = value
         ct= {"fa": '@', "t": "n"}
-        return [m, ct, v]
+        // return [m, null, v]
         //EPM-BUDGET-END
-        v = numeral(value).value();
-        var str = v.toExponential();
-        if(str.indexOf(".") > -1){
-            var strlen = str.split(".")[1].split("e")[0].length;
-            if(strlen > 5){
-                strlen = 5;
-            }
+        // v = numeral(value).value();
+        // var str = v.toExponential();
+        // if(str.indexOf(".") > -1){
+        //     var strlen = str.split(".")[1].split("e")[0].length;
+        //     if(strlen > 5){
+        //         strlen = 5;
+        //     }
 
-            ct = { "fa": "#0."+ new Array(strlen + 1).join("0") +"E+00", "t": "n" }; 
-        }
-        else{
-            ct = { "fa": "#0.E+00", "t": "n" };
-        }
+        //     ct = { "fa": "#0."+ new Array(strlen + 1).join("0") +"E+00", "t": "n" }; 
+        // }
+        // else{
+        //     ct = { "fa": "#0.E+00", "t": "n" };
+        // }
 
-        m = SSF.format(ct.fa, v);
+        // m = SSF.format(ct.fa, v);
     }
     else if(value.toString().indexOf("%") > -1){
         var index = value.toString().indexOf("%");
