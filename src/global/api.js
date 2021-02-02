@@ -6635,7 +6635,6 @@ export function updataSheet (options = {}) {
     let file = files[sheetmanage.getSheetIndex(Store.currentSheetIndex)],
         sheetData = sheetmanage.buildGridData(file);
     file.data = sheetData
-
     if (!!file.isPivotTable) {
         Store.luckysheetcurrentisPivotTable = true;
         if (!isPivotInitial) {
@@ -6647,18 +6646,22 @@ export function updataSheet (options = {}) {
         $("#luckysheet-modal-dialog-slider-pivot").hide();
         luckysheetsizeauto(false);
     }
-    sheetmanage.mergeCalculationSheet = {}
-    sheetmanage.mergeCalculation(file["index"]);
-    sheetmanage.setSheetParam();
     setTimeout(function () {
+        delete sheetmanage.mergeCalculationSheet[file["index"]]
+
+        sheetmanage.mergeCalculation(file["index"]);
+        sheetmanage.setSheetParam();
         sheetmanage.showSheet();
-        sheetmanage.restoreCache();
-        formula.execFunctionGroupForce(luckysheetConfigsetting.forceCalculation);
-        sheetmanage.restoreSheetAll(Store.currentSheetIndex);
-        luckysheetrefreshgrid();
-        if (success && typeof success === 'function') {
-            success();
-        }
+
+        setTimeout(function () {
+            sheetmanage.restoreCache();
+            formula.execFunctionGroupForce(luckysheetConfigsetting.forceCalculation);
+            sheetmanage.restoreSheetAll(Store.currentSheetIndex);
+            luckysheetrefreshgrid();
+            if (success && typeof success === 'function') {
+                success();
+            }
+        }, 1);
     }, 1);
     server.saveParam("shs", null, Store.currentSheetIndex);
 }
