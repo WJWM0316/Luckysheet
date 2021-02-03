@@ -6629,40 +6629,49 @@ export function updataSheet (options = {}) {
         for (let j = 0; j < files.length; j++) {
             if (files[j].index === data[i].index) {
                 files[j] = data[i]
+                let file = files[j],
+                sheetData = sheetmanage.buildGridData(file);
+                file.data = sheetData
+                if (!!file.isPivotTable) {
+                    Store.luckysheetcurrentisPivotTable = true;
+                    if (!isPivotInitial) {
+                        pivotTable.changePivotTable(index);
+                    }
+                }
+                else{
+                    Store.luckysheetcurrentisPivotTable = false;
+                    $("#luckysheet-modal-dialog-slider-pivot").hide();
+                    luckysheetsizeauto(false);
+                }
+                setTimeout(function () {
+                    delete sheetmanage.mergeCalculationSheet[file["index"]]
+                    sheetmanage.mergeCalculation(file["index"]);
+                    sheetmanage.setSheetParam();
+                    sheetmanage.showSheet();
+                    sheetmanage.restoreCache();
+                    formula.execFunctionGroupForce(luckysheetConfigsetting.forceCalculation);
+                    sheetmanage.restoreSheetAll(file["index"]);
+                    luckysheetrefreshgrid();
+                    
+                }, 1);
+
+                if (Store.clearjfundo) {
+                    Store.jfundo.length  = 0;
+                    let redo = {};
+                    redo["type"] = "updataSheet";
+                    redo["sheetconfig"] = file;
+                    redo["index"] = file["index"];
+                    redo["currentSheetIndex"] = Store.currentSheetIndex;
+                    Store.jfredo.push(redo);
+                }
             }
         }
     }
-    let file = files[sheetmanage.getSheetIndex(Store.currentSheetIndex)],
-        sheetData = sheetmanage.buildGridData(file);
-    file.data = sheetData
-    if (!!file.isPivotTable) {
-        Store.luckysheetcurrentisPivotTable = true;
-        if (!isPivotInitial) {
-            pivotTable.changePivotTable(index);
+    setTimeout(() => {
+        if (success && typeof success === 'function') {
+            success();
         }
-    }
-    else{
-        Store.luckysheetcurrentisPivotTable = false;
-        $("#luckysheet-modal-dialog-slider-pivot").hide();
-        luckysheetsizeauto(false);
-    }
-    setTimeout(function () {
-        delete sheetmanage.mergeCalculationSheet[file["index"]]
-
-        sheetmanage.mergeCalculation(file["index"]);
-        sheetmanage.setSheetParam();
-        sheetmanage.showSheet();
-
-        setTimeout(function () {
-            sheetmanage.restoreCache();
-            formula.execFunctionGroupForce(luckysheetConfigsetting.forceCalculation);
-            sheetmanage.restoreSheetAll(Store.currentSheetIndex);
-            luckysheetrefreshgrid();
-            if (success && typeof success === 'function') {
-                success();
-            }
-        }, 1);
-    }, 1);
+    }, 1)
     server.saveParam("shs", null, Store.currentSheetIndex);
 }
 
