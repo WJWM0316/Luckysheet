@@ -909,7 +909,7 @@ export function checkProtectionLocked(r, c, sheetIndex){
         return true;
     }
 
-    if(cell && cell.lo === 0){ // lo为0的时候才是可编辑
+    if(!cell || (cell && cell.lo === 0)){ // lo为0的时候才是可编辑
         return true;
     }
 
@@ -1008,7 +1008,7 @@ export function checkProtectionSelectLockedOrUnLockedCells(r, c, sheetIndex){
         return true;
     }
 
-    if(cell && cell.lo === 0){ // lo为0的时候才是可编辑
+    if(!cell || (cell && cell.lo === 0)){ // lo为0的时候才是可编辑
         if(aut.selectunLockedCells==1 || aut.selectunLockedCells==null){
             return true;
         }

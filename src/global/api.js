@@ -6632,6 +6632,7 @@ export function updataSheet (options = {}) {
                 let file = files[j],
                 sheetData = sheetmanage.buildGridData(file);
                 file.data = sheetData
+
                 if (!!file.isPivotTable) {
                     Store.luckysheetcurrentisPivotTable = true;
                     if (!isPivotInitial) {
@@ -6652,9 +6653,10 @@ export function updataSheet (options = {}) {
                     formula.execFunctionGroupForce(luckysheetConfigsetting.forceCalculation);
                     sheetmanage.restoreSheetAll(file["index"]);
                     luckysheetrefreshgrid();
-                    
+                    // 未知bug, set一下触发重新渲染
+                    let value = sheetData[0][0].v || ''
+                    setCellValue(0, 0, value)
                 }, 1);
-
                 if (Store.clearjfundo) {
                     Store.jfundo.length  = 0;
                     let redo = {};
