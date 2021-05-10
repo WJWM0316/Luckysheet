@@ -1765,16 +1765,23 @@ const selection = {
                             }
 
                             if(getObjType(x[c]) == "object"){
-                                let format = ['bg','fc','ct','ht','vt','bl','it','cl','un','fs','ff','tb']
-                                format.forEach(item=>{
-                                    Reflect.deleteProperty(x[c],item);
-                                })
+                                if(x[c].ct && x[c].ct.t === "inlineStr"){
+                                    delete value["ct"];
+                                }else{
+                                    let format = ['bg','fc','ct','ht','vt','bl','it','cl','un','fs','ff','tb']
+                                    format.forEach(item=>{
+                                        Reflect.deleteProperty(x[c],item);
+                                    })
+                                }
                             }
                             else{
                                 x[c] = {"v": x[c] };
                             }
 
                             x[c] = $.extend(true, x[c], value);
+                            if(x[c].ct && x[c].ct.t === "inlineStr"){  
+                                x[c].ct.s.forEach(item=> item = $.extend(true, item, value))
+                            }
 
                             if(copyHasMC && ("mc" in x[c])){
                                 if(x[c]["mc"].rs != null){
@@ -1857,8 +1864,14 @@ const selection = {
             jfrefreshgrid(d, Store.luckysheet_select_save, allParam);
         }
         else{
+            // 选区格式刷存在超出边界的情况
+             if(maxh >= d.length){
+                maxh = d.length - 1;
+            }
+            cfg = rowlenByRange(d, minh, maxh, cfg); //更新行高
             let allParam = {
                 "cfg": cfg,
+                "RowlChange": true,
                 "cdformat": cdformat,
                 "dataVerification": dataVerification
             }

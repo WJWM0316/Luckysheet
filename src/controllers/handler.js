@@ -5050,7 +5050,7 @@ export default function luckysheetHandler() {
 
         //点击功能栏时 如果是单元格编辑模式 则退出编辑模式 
         if ($(event.target).closest("#luckysheet-wa-editor").length > 0 && parseInt($("#luckysheet-input-box").css("top")) > 0) {
-            console.log(event);
+            
             formula.updatecell(Store.luckysheetCellUpdate[0], Store.luckysheetCellUpdate[1]);
             luckysheetMoveHighlightCell("down", 0, "rangeOfSelect");
         }
@@ -5126,13 +5126,10 @@ export default function luckysheetHandler() {
         luckysheetContainerFocus();
     });
 
-
-
     //左上角返回按钮
     $("#luckysheet_info_detail_title").click(function () {
         window.open(luckysheetConfigsetting.myFolderUrl, "_self");
     });
-
 
     //图表选区mousedown
     $("#luckysheet-chart-rangeShow").on("mousedown.chartRangeShowMove", ".luckysheet-chart-rangeShow-move", function (event) {
@@ -5489,8 +5486,7 @@ export default function luckysheetHandler() {
                                     break;
                                 }
                             }
-
-                            let fs = Math.floor(parseInt($td.css("font-size")) * 72 / 96) + 1;
+                            let fs = Math.round(parseInt($td.css("font-size")) * 72 / 96);
                             cell.fs = fs;
 
                             let fc = $td.css("color");
@@ -5720,6 +5716,12 @@ export default function luckysheetHandler() {
     }).mousedown(function (e) {
         e.stopPropagation();
     });
+
+    $('#luckysheet-wa-editor,#luckysheet-icon-morebtn-div,.luckysheet-toolbar-button').click(function(e){
+        if(this.id != 'luckysheet-icon-paintformat' && menuButton.luckysheetPaintModelOn){
+            menuButton.cancelPaintModel();
+        }
+    })
 }
 
 // 协同编辑其他用户不在操作的时候，且已经展示了用户名10秒，则用户名框隐藏
