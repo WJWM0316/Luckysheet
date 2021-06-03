@@ -18,7 +18,7 @@ const initListener = function(){
 
     createProxy(Store, 'asyncLoad', (target, property, val, receiver)=>{
         if(property === 'length' && val === 0){
-            method.createHookFunction('workbookCreateAfter', toJson())
+            method.createHookFunction('workbookCreateAfter')
         }
     })
 }

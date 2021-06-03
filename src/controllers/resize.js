@@ -438,23 +438,26 @@ export function menuToolBarWidth() {
         }
     }
 
+    
     toobarElements.forEach((curr,index,arr)=>{
         arr[index] = curr.ele;
-
-        if(index !== toobarElements.length - 1){
-            if(curr.ele instanceof Array){
-                toobarWidths.push($(curr.ele[0]).offset().left);
+        try {
+            if(index !== toobarElements.length - 1){
+                if(curr.ele instanceof Array){
+                    toobarWidths.push($(curr.ele[0]).offset().left);
+                }else{
+                    toobarWidths.push($(curr.ele).offset().left);
+                }
             }else{
-                toobarWidths.push($(curr.ele).offset().left);
+                if(curr.ele instanceof Array){
+                    toobarWidths.push($(curr.ele[0]).offset().left);
+                    toobarWidths.push($(curr.ele[0]).offset().left + $(curr.ele[0]).outerWidth() + 5);
+                }else{
+                    toobarWidths.push($(curr.ele).offset().left);
+                    toobarWidths.push($(curr.ele).offset().left + $(curr.ele).outerWidth() + 5);
+                }
             }
-        }else{
-            if(curr.ele instanceof Array){
-                toobarWidths.push($(curr.ele[0]).offset().left);
-                toobarWidths.push($(curr.ele[0]).offset().left + $(curr.ele[0]).outerWidth() + 5);
-            }else{
-                toobarWidths.push($(curr.ele).offset().left);
-                toobarWidths.push($(curr.ele).offset().left + $(curr.ele).outerWidth() + 5);
-            }
+        } catch (e) {
         }
 
     });

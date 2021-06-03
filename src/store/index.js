@@ -10,6 +10,7 @@ const Store = {
     currentSheetIndex: 0,
     calculateSheetIndex: 0,
 	flowdata: [],
+    
     config: {},
 
     visibledatarow: [],
@@ -164,8 +165,8 @@ const Store = {
         vt: 1,
         m: '',
         v: ''
-    }
-
+    },
+    dirtydata: null
 }
 
 export default Store;

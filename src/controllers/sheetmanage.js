@@ -599,7 +599,7 @@ const sheetmanage = {
             celldata = file.celldata;
         if (file.data && file.data.length > 0) {
             for (let i = 0; i < data.length; i++) {
-                for (let j = 0; j < data[0].length; j++) {
+                for (let j = 0; j < data[i].length; j++) {
                     setcellvalue(i, j, data, data[i][j]);
                 }
             }
@@ -727,12 +727,15 @@ const sheetmanage = {
     },
     initialjfFile: function(menu, title) {
         let _this = this;
-
+        console.time(1)
         _this.getCurSheet();
+        
         let file = Store.luckysheetfile[_this.getSheetIndex(Store.currentSheetIndex)];
         _this.nulldata = datagridgrowth([], Store.defaultrowNum, Store.defaultcolumnNum);
         let data = _this.buildGridData(file);
+        console.timeEnd(1)
 
+        console.time(2)
         //初始化的时候 记录选区
         let select_save = [];
         file.jfgird_select_save = file.jfgird_select_save || [];
@@ -757,7 +760,7 @@ const sheetmanage = {
         }
 
         menuButton.fontInitial(Store.fontList);//initial font
-
+        console.timeEnd(2)
         file.data = data;
 
         let rowheight = data.length;
@@ -770,6 +773,8 @@ const sheetmanage = {
             colwidth = c2 + 1;
         }
 
+        console.time(3)
+
         //钩子函数 表格创建之前触发
         if(typeof luckysheetConfigsetting.beforeCreateDom == "function" ){
             luckysheetConfigsetting.beforeCreateDom(luckysheet);
@@ -778,12 +783,14 @@ const sheetmanage = {
         if(typeof luckysheetConfigsetting.workbookCreateBefore == "function"){
             luckysheetConfigsetting.workbookCreateBefore(luckysheet);
         }
+        console.timeEnd(3)
 
+        
         // Store.flowdata = data;
-
         luckysheetcreatedom(colwidth, rowheight, data, menu, title);
 
         setTimeout(function () {
+            console.time(4)
             tooltip.createHoverTip("#luckysheet_info_detail" ,".luckysheet_info_detail_back, .luckysheet_info_detail_input, .luckysheet_info_detail_update");
             tooltip.createHoverTip("#luckysheet-wa-editor" ,".luckysheet-toolbar-menu-button, .luckysheet-toolbar-button, .luckysheet-toolbar-combo-button");
 
@@ -859,7 +866,6 @@ const sheetmanage = {
                     // if(typeof luckysheetConfigsetting.workbookCreateBefore == "function"){
                     //     luckysheetConfigsetting.workbookCreateBefore(luckysheet);
                     // }
-
                     arrayRemoveItem(Store.asyncLoad,'core');
 
                     if(luckysheetConfigsetting.pointEdit){
@@ -870,7 +876,7 @@ const sheetmanage = {
                     else{
                         setTimeout(function(){
                             Store.loadingObj.close()
-                        }, 500);
+                        }, 100);
                     }
                 }
 
@@ -949,6 +955,7 @@ const sheetmanage = {
                 ini();
                 console.log("缓存操作失败");
             }
+            console.timeEnd(4)
         }, 1);
     },
     storeSheetParam: function() {

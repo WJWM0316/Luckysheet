@@ -51,6 +51,8 @@ luckysheet = common_extend(api,luckysheet);
 
 //创建luckysheet表格
 luckysheet.create = function (setting) {
+
+    console.time(11)
     method.destroy()
     // Store original parameters for api: toJson
     Store.toJsonOptions = {}
@@ -61,7 +63,9 @@ luckysheet.create = function (setting) {
     }
 
     let extendsetting = common_extend(defaultSetting, setting);
+    console.timeEnd(11)
 
+    console.time(22)
     let loadurl = extendsetting.loadUrl,
         menu = extendsetting.menu,
         title = extendsetting.title;
@@ -136,6 +140,7 @@ luckysheet.create = function (setting) {
     luckysheetConfigsetting.container = extendsetting.container;
     luckysheetConfigsetting.hook = extendsetting.hook;
 
+    luckysheetConfigsetting.noRedo = extendsetting.noRedo;
     luckysheetConfigsetting.pager = extendsetting.pager;
 
     luckysheetConfigsetting.initShowsheetbarConfig = false;
@@ -146,7 +151,9 @@ luckysheet.create = function (setting) {
 
     // Store the currently used plugins for monitoring asynchronous loading
     Store.asyncLoad.push(...luckysheetConfigsetting.plugins);
-    
+    console.timeEnd(22)
+
+    console.time(33)
     // Register plugins
     initPlugins(extendsetting.plugins , extendsetting.data);
 
@@ -162,7 +169,9 @@ luckysheet.create = function (setting) {
     //loading
     const loadingObj=luckysheetlodingHTML("#" + container)
     Store.loadingObj=loadingObj
+    console.timeEnd(33)
 
+    console.time(444)
     if (loadurl == "") {
         sheetmanage.initialjfFile(menu, title);
         // luckysheetsizeauto();
@@ -183,6 +192,7 @@ luckysheet.create = function (setting) {
             }
         });
     }
+    console.timeEnd(44)
 }
 
 function initialWorkBook(){

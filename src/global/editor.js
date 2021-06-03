@@ -1,6 +1,7 @@
 import browser from './browser';
 import formula from './formula';
 import { datagridgrowth } from './getdata';
+import luckysheetConfigsetting from '../controllers/luckysheetConfigsetting'
 import { jfrefreshgrid, jfrefreshgridall, jfrefreshrange } from './refresh';
 import { getSheetIndex } from '../methods/get';
 import Store from '../store';
@@ -29,7 +30,12 @@ const editor = {
     },
     webWorkerFlowDataCache:function(flowData){
         let _this = this;
-
+        // 不需要历史记录就不做深拷贝处理，优化性能
+        if (luckysheetConfigsetting.noRedo) {
+            _this.deepCopyFlowDataCache = flowData;
+            _this.deepCopyFlowDataState = true;
+            return
+        }
         try{
             if(_this.deepCopyFlowDataWorker != null){//存新的webwork前先销毁以前的
                 _this.deepCopyFlowDataWorker.terminate();
